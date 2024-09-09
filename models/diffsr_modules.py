@@ -11,6 +11,7 @@ from .commons import ResnetBlock, Upsample, Block, Downsample
 class RRDBNet(nn.Module):
     def __init__(self, in_nc, out_nc, nf, nb, gc=32):
         super(RRDBNet, self).__init__()
+
         RRDB_block_f = functools.partial(RRDB, nf=nf, gc=gc)
 
         self.conv_first = nn.Conv2d(in_nc, nf, 3, 1, 1, bias=True)
@@ -38,9 +39,12 @@ class RRDBNet(nn.Module):
         feas.append(fea)
 
         fea = self.lrelu(self.upconv1(F.interpolate(fea, scale_factor=2, mode='nearest')))
-        fea = self.lrelu(self.upconv2(F.interpolate(fea, scale_factor=2, mode='nearest')))
+        if hparams['sr_scale'] in [4, 8]:
+            fea = self.lrelu(self.upconv2(F.interpolate(fea, scale_factor=2, mode='nearest')))
         if hparams['sr_scale'] == 8:
             fea = self.lrelu(self.upconv3(F.interpolate(fea, scale_factor=2, mode='nearest')))
+        if hparams['sr_scale'] == 10:
+            fea = self.lrelu(self.upconv2(F.interpolate(fea, scale_factor=5, mode='nearest')))
         fea_hr = self.HRconv(fea)
         out = self.conv_last(self.lrelu(fea_hr))
         out = out.clamp(0, 1)

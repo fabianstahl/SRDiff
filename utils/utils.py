@@ -234,7 +234,7 @@ class Measure:
         return dist01
 
     def ssim(self, imgA, imgB):
-        score, diff = ssim(imgA, imgB, full=True, multichannel=True, data_range=255)
+        score, diff = ssim(imgA, imgB, full=True, channel_axis=2, data_range=255)
         return score
 
     def psnr(self, imgA, imgB):

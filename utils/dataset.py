@@ -7,6 +7,7 @@ from .hparams import hparams
 from utils.indexed_datasets import IndexedDataset
 from utils.matlab_resize import imresize
 
+import cv2
 
 class SRDataSet(Dataset):
     def __init__(self, prefix='train'):
@@ -48,3 +49,31 @@ class SRDataSet(Dataset):
 
     def __len__(self):
         return self.len
+
+
+class DualSourceSRDataSet(SRDataSet):
+
+    def __init__(self, prefix='train'):
+        super().__init__(prefix)
+
+        if 'rgb_channels_inp' in self.hparams:
+            self.rgb_channels_inp = self.hparams['rgb_channels_inp']
+        else:
+            self.rgb_channels_inp = list(range(in_channels))
+
+
+    def __getitem__(self, index):
+        item = self._get_item(index)
+        hparams = self.hparams
+        img_hr = item['img_hr'] / 256
+        img_lr = item['img_lr'] / 256  # np.uint8 [H, W, C]
+
+        img_hr = img_hr.transpose(2, 0, 1)
+        img_lr = img_lr.transpose(2, 0, 1)
+        img_lr_up = cv2.resize(img_lr[self.rgb_channels_inp], (img_hr.shape[1], img_hr.shape[2]))
+
+        img_hr, img_lr, img_lr_up = [self.to_tensor_norm(x).float() for x in [img_hr, img_lr, img_lr_up]]
+
+        return {
+            'img_hr': img_hr, 'img_lr': img_lr, 'img_lr_up': img_lr_up, 'item_name': item['item_name']
+        }
