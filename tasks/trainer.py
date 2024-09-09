@@ -20,6 +20,12 @@ class Trainer:
         self.work_dir = hparams['work_dir']
         self.first_val = True
 
+        in_channels     = hparams['no_in_channels']
+        if 'rgb_channels_inp' in hparams:
+            self.rgb_channels_inp = hparams['rgb_channels_inp']
+        else:
+            self.rgb_channels_inp = list(range(in_channels))
+
     def build_tensorboard(self, save_dir, name, **kwargs):
         log_dir = os.path.join(save_dir, name)
         os.makedirs(log_dir, exist_ok=True)
@@ -102,7 +108,8 @@ class Trainer:
                     self.logger.add_image(f'rrdb_out_{batch_idx}', plot_img(rrdb_out[0]), self.global_step)
                 if self.global_step <= hparams['val_check_interval']:
                     self.logger.add_image(f'HR_{batch_idx}', plot_img(img_hr[0]), self.global_step)
-                    self.logger.add_image(f'LR_{batch_idx}', plot_img(img_lr[0]), self.global_step)
+                    print(img_lr.shape)
+                    self.logger.add_image(f'LR_{batch_idx}', plot_img(img_lr[0, self.rgb_channels_inp]), self.global_step)
                     self.logger.add_image(f'BL_{batch_idx}', plot_img(img_lr_up[0]), self.global_step)
             metrics = {}
             metrics.update({k: np.mean(ret[k]) for k in self.metric_keys})
