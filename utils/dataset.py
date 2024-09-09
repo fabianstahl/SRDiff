@@ -61,6 +61,16 @@ class DualSourceSRDataSet(SRDataSet):
         else:
             self.rgb_channels_inp = list(range(in_channels))
 
+        inp_channels = hparams['no_in_channels']
+        self.to_tensor_norm_inp = transforms.Compose([
+            transforms.ToTensor(), transforms.Normalize([0.5] * inp_channels, [0.5] * inp_channels)
+        ])
+
+
+        self.to_tensor_norm_gt = transforms.Compose([
+            transforms.ToTensor(), transforms.Normalize([0.5] * 3, [0.5] * 3)
+        ])
+
 
     def __getitem__(self, index):
         item = self._get_item(index)
@@ -68,12 +78,10 @@ class DualSourceSRDataSet(SRDataSet):
         img_hr = item['img_hr'] / 256
         img_lr = item['img_lr'] / 256  # np.uint8 [H, W, C]
 
-        img_hr = img_hr.transpose(2, 0, 1)
-        img_lr = img_lr.transpose(2, 0, 1)
-        img_lr_up = cv2.resize(img_lr[self.rgb_channels_inp], (img_hr.shape[1], img_hr.shape[2]))
-
-        img_hr, img_lr, img_lr_up = [self.to_tensor_norm(x).float() for x in [img_hr, img_lr, img_lr_up]]
-
+        img_lr_up   = cv2.resize(img_lr[:,:,self.rgb_channels_inp], (img_hr.shape[0], img_hr.shape[1]))
+        img_lr      = self.to_tensor_norm_inp(img_lr)
+        img_hr      = self.to_tensor_norm_gt(img_hr)
+        img_lr_up   = self.to_tensor_norm_gt(img_lr_up)
         return {
             'img_hr': img_hr, 'img_lr': img_lr, 'img_lr_up': img_lr_up, 'item_name': item['item_name']
         }
