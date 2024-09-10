@@ -7,6 +7,7 @@ from PIL import Image
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 from utils.hparams import hparams, set_hparams
+from utils.utils import Denormalize
 import numpy as np
 from utils.utils import plot_img, move_to_cuda, load_checkpoint, save_checkpoint, tensors_to_scalars, load_ckpt, Measure
 
@@ -25,6 +26,10 @@ class Trainer:
             self.rgb_channels_inp = hparams['rgb_channels_inp']
         else:
             self.rgb_channels_inp = list(range(in_channels))
+
+        self.denorm_inp = Denormalize(hparams['in_mean'], hparams['in_std'])
+        self.denorm_gt  = Denormalize(hparams['gt_mean'], hparams['gt_std'])
+
 
     def build_tensorboard(self, save_dir, name, **kwargs):
         log_dir = os.path.join(save_dir, name)
@@ -103,14 +108,18 @@ class Trainer:
             img_lr = batch['img_lr']
             img_lr_up = batch['img_lr_up']
             if img is not None:
-                self.logger.add_image(f'Pred_{batch_idx}', plot_img(img[0]), self.global_step)
+                img_denorm = self.denorm_gt(img[0]) / 256
+                self.logger.add_image(f'Pred_{batch_idx}', plot_img(img_denorm), self.global_step)
                 if hparams.get('aux_l1_loss'):
-                    self.logger.add_image(f'rrdb_out_{batch_idx}', plot_img(rrdb_out[0]), self.global_step)
+                    rrdb_out_denorm = self.denorm_gt(rrdb_out[0]) / 256
+                    self.logger.add_image(f'rrdb_out_{batch_idx}', plot_img(rrdb_out_denorm), self.global_step)
                 if self.global_step <= hparams['val_check_interval']:
-                    self.logger.add_image(f'HR_{batch_idx}', plot_img(img_hr[0]), self.global_step)
-                    print(img_lr.shape)
-                    self.logger.add_image(f'LR_{batch_idx}', plot_img(img_lr[0, self.rgb_channels_inp]), self.global_step)
-                    self.logger.add_image(f'BL_{batch_idx}', plot_img(img_lr_up[0]), self.global_step)
+                    img_hr_denorm = self.denorm_gt(img_hr[0]) / 256
+                    self.logger.add_image(f'HR_{batch_idx}', plot_img(img_hr_denorm), self.global_step)
+                    img_lr_denorm = self.denorm_gt(img_lr[0, self.rgb_channels_inp]) / 256
+                    self.logger.add_image(f'LR_{batch_idx}', plot_img(img_lr_denorm), self.global_step)
+                    img_lr_up_denorm = self.denorm_gt(img_lr_up[0]) / 256
+                    self.logger.add_image(f'BL_{batch_idx}', plot_img(img_lr_up_denorm), self.global_step)
             metrics = {}
             metrics.update({k: np.mean(ret[k]) for k in self.metric_keys})
             pbar.set_postfix(**tensors_to_scalars(metrics))

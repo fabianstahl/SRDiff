@@ -2,7 +2,7 @@ import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
-
+import torch
 from .hparams import hparams
 from utils.indexed_datasets import IndexedDataset
 from utils.matlab_resize import imresize
@@ -61,27 +61,31 @@ class DualSourceSRDataSet(SRDataSet):
         else:
             self.rgb_channels_inp = list(range(in_channels))
 
+        in_mean    = self.hparams['in_mean']
+        in_std     = self.hparams['in_std']
+        gt_mean    = self.hparams['gt_mean']
+        gt_std     = self.hparams['gt_std']
+
         inp_channels = hparams['no_in_channels']
-        self.to_tensor_norm_inp = transforms.Compose([
-            transforms.ToTensor(), transforms.Normalize([0.5] * inp_channels, [0.5] * inp_channels)
+        self.norm_inp = transforms.Compose([
+            transforms.ToTensor(), transforms.Normalize(in_mean, in_std)
+        ])
+        self.norm_gt = transforms.Compose([
+            transforms.ToTensor(), transforms.Normalize(gt_mean, gt_std)
         ])
 
 
-        self.to_tensor_norm_gt = transforms.Compose([
-            transforms.ToTensor(), transforms.Normalize([0.5] * 3, [0.5] * 3)
-        ])
 
 
     def __getitem__(self, index):
         item = self._get_item(index)
         hparams = self.hparams
-        img_hr = item['img_hr'] / 256
-        img_lr = item['img_lr'] / 256  # np.uint8 [H, W, C]
-
-        img_lr_up   = cv2.resize(img_lr[:,:,self.rgb_channels_inp], (img_hr.shape[0], img_hr.shape[1]))
-        img_lr      = self.to_tensor_norm_inp(img_lr)
-        img_hr      = self.to_tensor_norm_gt(img_hr)
-        img_lr_up   = self.to_tensor_norm_gt(img_lr_up)
+        img_hr = item['img_hr']
+        img_lr = item['img_lr']
+        img_lr_up   = cv2.resize(img_lr, (img_hr.shape[0], img_hr.shape[1]))
+        img_lr_up   = self.norm_inp(img_lr_up)[self.rgb_channels_inp]
+        img_lr      = self.norm_inp(img_lr)
+        img_hr      = self.norm_gt(img_hr)
         return {
             'img_hr': img_hr, 'img_lr': img_lr, 'img_lr_up': img_lr_up, 'item_name': item['item_name']
         }

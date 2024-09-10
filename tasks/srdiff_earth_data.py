@@ -10,7 +10,6 @@ from utils.indexed_datasets import IndexedDataset
 class EarthDataSet(DualSourceSRDataSet):
     def __init__(self, prefix='train'):
         super().__init__(prefix)
-        preprocess_transforms = []
         if self.prefix == 'test':
             self.len = 5000
             if hparams['test_save_png']:

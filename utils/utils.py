@@ -255,3 +255,17 @@ def t(img):
         return torch.Tensor(img)
 
     return to_tensor(to_4d(to_CHW(img))) / 127.5 - 1
+
+
+
+
+class Denormalize(object):
+    def __init__(self, mean, std):
+        self.mean   = torch.tensor(mean)
+        self.std    = torch.tensor(std)
+
+    def __call__(self, tensor):
+        tensor = tensor.clone()  # Clone the tensor to avoid modifying the original
+        for t, m, s in zip(tensor, self.mean, self.std):
+            t.mul_(s).add_(m)  # Reverse the normalization: (tensor * std) + mean
+        return tensor
