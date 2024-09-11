@@ -41,7 +41,8 @@ class SRDiffTrainer(Trainer):
         img_lr_up = sample['img_lr_up']
         img_sr, rrdb_out = self.model.sample(img_lr, img_lr_up, img_hr.shape)
         for b in range(img_sr.shape[0]):
-            s = self.measure.measure(img_sr[b], img_hr[b], img_lr[b], hparams['sr_scale'])
+            inp_rgb = img_lr[b, self.rgb_channels_inp]
+            s       = self.measure.measure(img_sr[b], img_hr[b], inp_rgb, hparams['sr_scale'])
             ret['psnr'] += s['psnr']
             ret['ssim'] += s['ssim']
             ret['lpips'] += s['lpips']
