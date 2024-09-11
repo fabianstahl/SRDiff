@@ -59,7 +59,7 @@ Please go to https://github.com/LeiaLi/SRDiff/releases/tag/v1.0.0 to download th
 # train rrdb-based conditional net
 CUDA_VISIBLE_DEVICES=0 python -m tasks.trainer --config configs/rrdb/earth_data_pretrain.yaml --exp_name earth_data --reset
 # train srdiff
-CUDA_VISIBLE_DEVICES=0 python -m tasks.trainer --config configs/diffsr_earth_data.yaml --exp_name diffsr_celebA_1 --reset --hparams="rrdb_ckpt=checkpoints/earth_data"
+CUDA_VISIBLE_DEVICES=0 python -m tasks.trainer --config configs/diffsr_earth_data.yaml --exp_name diffsr_earth_data_1 --reset --hparams="rrdb_ckpt=checkpoints/earth_data"
 
 # tensorboard
 tensorboard --logdir checkpoints/diffsr_celebA_1
