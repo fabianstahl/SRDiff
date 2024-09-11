@@ -10,13 +10,15 @@ from utils.utils import load_ckpt
 
 class SRDiffTrainer(Trainer):
     def build_model(self):
-        hidden_size = hparams['hidden_size']
+        hidden_size     = hparams['hidden_size']
+        in_channels     = hparams['no_in_channels']
+        out_channels    = hparams['no_gt_channels']
         dim_mults = hparams['unet_dim_mults']
         dim_mults = [int(x) for x in dim_mults.split('|')]
         denoise_fn = Unet(
             hidden_size, out_dim=3, cond_dim=hparams['rrdb_num_feat'], dim_mults=dim_mults)
         if hparams['use_rrdb']:
-            rrdb = RRDBNet(3, 3, hparams['rrdb_num_feat'], hparams['rrdb_num_block'],
+            rrdb = RRDBNet(in_channels, out_channels, hparams['rrdb_num_feat'], hparams['rrdb_num_block'],
                            hparams['rrdb_num_feat'] // 2)
             if hparams['rrdb_ckpt'] != '' and os.path.exists(hparams['rrdb_ckpt']):
                 load_ckpt(rrdb, hparams['rrdb_ckpt'])
