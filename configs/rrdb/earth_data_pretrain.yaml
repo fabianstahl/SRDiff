@@ -9,6 +9,6 @@ num_block: 8
 
 # train and eval
 max_updates: 100000
-batch_size: 64
+batch_size: 32
 eval_batch_size: 20
 valid_steps: 3
