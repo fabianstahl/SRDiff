@@ -20,8 +20,11 @@ class RRDBNet(nn.Module):
         #### upsampling
         self.upconv1 = nn.Conv2d(nf, nf, 3, 1, 1, bias=True)
         self.upconv2 = nn.Conv2d(nf, nf, 3, 1, 1, bias=True)
-        if hparams['sr_scale'] == 8:
+        if hparams['sr_scale'] in [8, 16]:
             self.upconv3 = nn.Conv2d(nf, nf, 3, 1, 1, bias=True)
+        if hparams['sr_scale'] == 16:
+            self.upconv4 = nn.Conv2d(nf, nf, 3, 1, 1, bias=True)
+
         self.HRconv = nn.Conv2d(nf, nf, 3, 1, 1, bias=True)
         self.conv_last = nn.Conv2d(nf, out_nc, 3, 1, 1, bias=True)
 
@@ -39,10 +42,12 @@ class RRDBNet(nn.Module):
         feas.append(fea)
 
         fea = self.lrelu(self.upconv1(F.interpolate(fea, scale_factor=2, mode='nearest')))
-        if hparams['sr_scale'] in [4, 8]:
+        if hparams['sr_scale'] in [4, 8, 16]:
             fea = self.lrelu(self.upconv2(F.interpolate(fea, scale_factor=2, mode='nearest')))
-        if hparams['sr_scale'] == 8:
+        if hparams['sr_scale'] in [8, 16]:
             fea = self.lrelu(self.upconv3(F.interpolate(fea, scale_factor=2, mode='nearest')))
+        if hparams['sr_scale'] == 16:
+            fea = self.lrelu(self.upconv4(F.interpolate(fea, scale_factor=2, mode='nearest')))
         if hparams['sr_scale'] == 10:
             fea = self.lrelu(self.upconv2(F.interpolate(fea, scale_factor=5, mode='nearest')))
         fea_hr = self.HRconv(fea)

@@ -28,9 +28,12 @@ pip install -r requirements.txt
 3. Pack to pickle for training
 ```bash
 # pack the Earth Data dataset
-python -m data_gen.earth_data --config configs/earth_data.yaml
+python -m data_gen.earth_data --config configs/earth_data_x8.yaml
+python -m data_gen.earth_data --config configs/earth_data_x16.yaml
+
 # pack the CelebA dataset
 python -m data_gen.celeb_a --config configs/celeb_a.yaml
+
 # pack the DIV2K dataset
 python -m data_gen.df2k --config configs/df2k4x.yaml
 ```
@@ -53,16 +56,16 @@ Please go to https://github.com/LeiaLi/SRDiff/releases/tag/v1.0.0 to download th
         - srdiff: configs/diffsr_df2k4x.yaml
 3. Run training / evaluation code. The code is for training on 1 GPU.
 
-### EarthData
+### EarthData (x8 / x16)
 
 ```bash
 # train rrdb-based conditional net
-CUDA_VISIBLE_DEVICES=0 python -m tasks.trainer --config configs/rrdb/earth_data_pretrain.yaml --exp_name earth_data --reset
+CUDA_VISIBLE_DEVICES=0 python -m tasks.trainer --config configs/rrdb/earth_data_pretrain_x16.yaml --exp_name earth_data_x16 --reset
 # train srdiff
-CUDA_VISIBLE_DEVICES=0 python -m tasks.trainer --config configs/diffsr_earth_data.yaml --exp_name diffsr_earth_data_1 --reset --hparams="rrdb_ckpt=checkpoints/earth_data"
+CUDA_VISIBLE_DEVICES=0 python -m tasks.trainer --config configs/diffsr_earth_data_x16.yaml --exp_name diffsr_earth_data_x16 --reset --hparams="rrdb_ckpt=checkpoints/earth_data_x16"
 
 # tensorboard
-tensorboard --logdir checkpoints/diffsr_celebA_1
+tensorboard --logdir checkpoints/diffsr_earth_data_x16/
 
 # evaluate
 CUDA_VISIBLE_DEVICES=0 python -m tasks.trainer --config configs/diffsr_celeb.yaml --exp_name diffsr_celebA_1 --infer

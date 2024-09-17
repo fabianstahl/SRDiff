@@ -6,7 +6,7 @@
 # On Black-Donkey
 raw_data_dir_inp: /sr_data/s2_tiles_all
 raw_data_dir_gt:  /sr_data/dop20_tiles
-binary_data_dir:  /sr_data/binary/EarthData
+binary_data_dir:  /sr_data/binary/EarthData_x16
 
 set_table: earth_data_sample_table.txt
 
@@ -14,7 +14,7 @@ no_in_channels: 13
 no_gt_channels: 3
 rgb_channels_inp: [3, 2, 1]
 
-sr_scale: 10
+sr_scale: 16
 in_size: 100
 
 in_mean: [1211.6917, 972.6395, 920.9624, 761.8781, 1114.0452, 2439.3484, 3075.5315, 3037.5247, 3409.9683, 1015.3680, 12.0481, 1856.8668, 995.5594]

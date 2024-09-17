@@ -1,6 +1,6 @@
 base_config:
   - ../sr_base.yaml
-  - ../earth_data.yaml
+  - ../earth_data_x8.yaml
 trainer_cls: tasks.rrdb.RRDBEarthDataTask
 # model
 hidden_size: 32
